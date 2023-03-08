@@ -1,3 +1,5 @@
+import os
+
 numberEsp = 100
 
 for i in range(1, numberEsp):
@@ -168,4 +170,11 @@ for i in range(1, numberEsp):
 
     codeEsp += "\tserver.begin();\n}"
 
-    f = 
+    if(os.path.exists("./CodeEsp/Esp"+str(i)) == False):
+        os.mkdir("./CodeEsp/Esp"+str(i))
+
+    f = open("./CodeEsp/Esp"+str(i)+"/main.cpp", "w")
+
+    f.write(codeEsp)
+
+    f.close()
