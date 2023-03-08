@@ -48,4 +48,56 @@ app.get("/page", function (req, res) {
     res.render("page2.ejs",{ nbbutton: 10});
 })
 
+
+app.get("/chcouleur", function (req, res) {
+    //Si un Bp a changé d'état (bas vers haut) !
+  
+    console.log(req.query.ledrouge);
+    console.log(req.query.ledverte);
+    console.log(req.query.ledbleu);
+    res.sendStatus(200);
+    envoi="http://192.168.0.100:80/chcouleur?Red="+req.query.ledrouge+"&Green="+req.query.ledverte+"&Blue="+req.query.ledblue;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", envoi);
+    xhr.send();
+    xhr.responseType = "json";
+    xhr.onload = () => {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+        const data = xhr.response;
+        console.log(data);
+    } else {
+        console.log(`Error: ${xhr.status}`);
+    }
+    };
+})
+
+app.get("/page", function (req, res) {
+    //Si un Bp a changé d'état (bas vers haut) !
+  
+    res.render("page2.ejs",{ nbbutton: 10});
+})
+
+
+app.get("/chboutons", function (req, res) {
+    //Si un Bp a changé d'état (bas vers haut) !
+  
+    console.log(req.query.list);
+    res.sendStatus(200);
+    envoi="http://192.168.0.100:80/chboutons?Red="+req.query.ledrouge+"&Green="+req.query.ledverte+"&Blue="+req.query.ledblue;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", envoi);
+    xhr.send();
+    xhr.responseType = "json";
+    xhr.onload = () => {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+        const data = xhr.response;
+        console.log(data);
+    } else {
+        console.log(`Error: ${xhr.status}`);
+    }
+    };
+})
+
 server.listen(port, () => console.log(`Listening on port :${port}`));
