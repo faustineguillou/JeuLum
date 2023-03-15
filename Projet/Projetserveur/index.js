@@ -82,9 +82,31 @@ app.get("/page", function (req, res) {
 app.get("/chboutons", function (req, res) {
     //Si un Bp a changé d'état (bas vers haut) !
   
-    console.log(req.query.list);
+    
     res.sendStatus(200);
-    envoi="http://192.168.0.100:80/chboutons?Red="+req.query.ledrouge+"&Green="+req.query.ledverte+"&Blue="+req.query.ledblue;
+    envoi="http://192.168.0.100:80/chboutons?value="+req.query.valbouton;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", envoi);
+    xhr.send();
+    xhr.responseType = "json";
+    xhr.onload = () => {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+        const data = xhr.response;
+        console.log(data);
+    } else {
+        console.log(`Error: ${xhr.status}`);
+    }
+    };
+})
+
+
+app.get("/value", function (req, res) {
+    //Si un Bp a changé d'état (bas vers haut) !
+  
+    
+    res.sendStatus(200);
+    envoi="http://192.168.0.100:80/value";
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", envoi);

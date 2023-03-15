@@ -44,21 +44,35 @@ function senddata(ledrouge,ledverte,ledbleu)
     sendGetRequest(req);
 }
 
-function senddataboutons(listidbutton)
+function senddataboutons(idbutton)
 {
-    var listfinal=[];
-    for(var i=1; i<=listidbutton.lenght; i++)
-    {
-        var valbouton=document.getElementById(i).value;
-        listfinal.push(valbouton);
-    }
+    
+    
+        var valbouton=document.getElementById(idbutton).value;
+        
+    
     
 
 
-    req="http://127.0.0.1:8102/chboutons?list="+listfinal;
+    req="http://127.0.0.1:8102/chboutons?value="+valbouton;
 
     sendGetRequest(req);
 }
+
+function askvaluebouton(idbutton)
+{
+    
+    
+        
+    
+    
+
+
+    req="http://127.0.0.1:8102/value?button="+
+
+    sendGetRequest(req);
+}
+
 
 function sendGetRequest(getRequest)
 {

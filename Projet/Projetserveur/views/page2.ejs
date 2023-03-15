@@ -36,7 +36,7 @@
             
             
                 <% idbutton = i %>
-                <button class="btn btn-primary mr-3 taillebouton" id=" <%= idbutton%> " onclick="voirrgb(this.id);"><%= idbutton%></button>%>
+                <button class="btn btn-primary mr-3 taillebouton" id=" <%= idbutton%> " onclick="voirrgb(this.id);"><%= idbutton%></button>
             
         <% } %>
         </div>
@@ -75,23 +75,25 @@
         <p class="lead text-center text-white"> Ici vous pourrez observer si un bouton est enclenché et au besin modifier la valeur correspondant. </p>
         <div class="Bouton text-white d-flex flex-row
         flex-wrap pt-5">
-        <% var listidbutton=[] %>
+       
         <% for (var i=1; i<=nbbutton; i++) { %>
             <% idbutton = i %>
-            <%listidbutton.push(<%= idbutton%> +bouton)%>
+           
 
-                
-                <div class="mr-3">
+            <div class="d-flex flex-column">
+                <div class="mr-3 pt-4 d-flex flex-row ">
                 <p><input type="number" id=" <%= idbutton%> +bouton" name="button1" value ="0"
                 min="0" max="1" >Bouton <%= idbutton%></p>
+                <button type="button" class="btn btn-success" onclick="JavaScript:senddataboutons('<%=idbutton%>');">Submit</button>
                 </div>
+                <div class="pt-2">
+                    <button type="button" class="btn btn-primary" onclick="JavaScript:askvaluebouton('<%=idbutton%>');">Ask Value</button>
+                </div>
+            </div>
             
         <% } %>
+        </div>
         
-        </div>
-        <div class="pt-5">
-        <button type="button" class="btn btn-success" onclick="JavaScript:senddataboutons('<%=listidbutton%>');">Submit</button>
-        </div>
             
     </section>
     <footer class="fin text-center p-3" >
