@@ -20,32 +20,46 @@
 
 
     <!--Home-->
-    <section id=accueil class="accueil bg-dark d-flex w-100 h-50 flex-column justify-content-center align-items-center">
+    <section id=accueil class="accueil bg-dark d-flex w-100 h-100 flex-column justify-content-center align-items-center">
         <h1 class="display-1 text-white text-center">Jeu interactif</h1>
         <p class="lead text-center text-white"> Cette page simule le jeu des lumières. Elle permettra de tester les fonctionnalités. </p>
             
     </section>
 
     <!--Lumières-->
-    <section id=lumieres class="sectionlumieres d-flex w-100 h-100 flex-column">
+    <section id=lumieres class="sectionlumieres d-flex w-100 h-100 flex-column  justify-content-center align-items-center">
         <h1 class="display-4 text-white text-center">Réglages des Lumières</h1>
         <p class="lead text-center text-white"> Chaque bouton correspond à un bouton lumineux du jeu physique.
             Pour changer les réglages de lumière, cliquez sur un bouton au choix. </p>
-        <% for (var i=0; i<nbbutton; i++) { %>
+        <div class="classeboutons d-flex flex-row pt-5">
+            <% for (var i=1; i<=nbbutton; i++) { %>
             
-            <div class="classeboutons d-flex flex-row"></div>
+            
                 <% idbutton = i %>
-                <button class="btn btn-primary taillebouton" id=" <%= idbutton%> " onclick="voirrgb(this.id);"><%= idbutton%></button>%>
-            </div>
+                <button class="btn btn-primary mr-3 taillebouton" id=" <%= idbutton%> " onclick="voirrgb(this.id);"><%= idbutton%></button>
+            
         <% } %>
-        <div id="rgb"> 
-            <p>Led<input type="text" id="nbled" value=""></p>
-            <p>R <input type="number" id="red1" value="0" min="0" max="1"></p>
-            <p>G <input type="number" id="green1" value="0" min="0" max="1"></p>
-            <p>B <input type="number" id="blue1" value="0" min="0" max="1"></p>
         </div>
-            <!--<input type="button" value="Led 3"> -- >
-            < !-- <input type="button" value="Led 4"> -->
+        <div id="rgb" class="lead text-white pt-3"> 
+            <p>Led
+            <input type="text" id="nbledform" name="nbledform" value=""/></p>
+  
+
+            <p>R <input id="idledrouge" type="number" name="ledrouge" min="0" max="1"/></p>
+        
+
+            <p>G
+            <input id="ledverte" type="number" name="ledverte" min="0" max="1"/> </p>
+        
+
+            <p>B
+            <input id="ledbleu" type="number" name="ledbleu" min="0" max="1"/></p>
+
+            <button type="button" class="btn btn-success" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
+              
+            
+        </div>
+        
         
             
     </section>
@@ -59,13 +73,28 @@
     <section id=boutons class="sectionboutons bg-dark d-flex w-150 h-100 flex-column align-items-center">
         <h1 class="display-4 text-white text-center">Réglages et observation des boutons</h1>
         <p class="lead text-center text-white"> Ici vous pourrez observer si un bouton est enclenché et au besin modifier la valeur correspondant. </p>
+        <div class="Bouton text-white d-flex flex-row
+        flex-wrap pt-5">
+       
+        <% for (var i=1; i<=nbbutton; i++) { %>
+            <% idbutton = i %>
+           
 
-        <div class="Bouton text-white">
-            <p> Bouton 1 <input type="number" id="but1" name="button1" value ="0"
-                min="0" max="1" > </p>
-            <p> Bouton 2 <input type="number" id="but2" name="button2" value ="0"
-                min="0" max="1"> </p>
+            <div class="d-flex flex-column">
+                <div class="mr-3 pt-4 d-flex flex-row ">
+                <p><input type="number" id=" <%= idbutton%> +bouton" name="button1" value ="0"
+                min="0" max="1" >Bouton <%= idbutton%></p>
+                <button type="button" class="btn btn-success" onclick="JavaScript:senddataboutons('<%=idbutton%>');">Submit</button>
+                </div>
+                <div class="pt-2">
+                    <button type="button" class="btn btn-primary" onclick="JavaScript:askvaluebouton('<%=idbutton%>');">Ask Value</button>
+                </div>
+            </div>
+            
+        <% } %>
         </div>
+        
+            
     </section>
     <footer class="fin text-center p-3" >
         Jeu des lumières - Faustine Guillou, Heiko Viel

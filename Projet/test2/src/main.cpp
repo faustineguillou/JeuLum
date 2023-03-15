@@ -143,6 +143,52 @@ void setup() {
  
     request->send(200, "text/plain", "message received");
   });
+
+  server.on("/chcouleur", HTTP_GET, [](AsyncWebServerRequest *request){
+ 
+    int paramsNr = request->params();
+    Serial.println(paramsNr);
+
+    for(int i=0;i<paramsNr;i++){
+ 
+        AsyncWebParameter* p = request->getParam(i);
+        if(p->name() == Red)
+        {
+          if(p->value() == "0")
+          {
+            digitalWrite(RED_PIN, LOW);
+          }
+          else
+          {
+            digitalWrite(RED_PIN, HIGH);
+          }
+        }
+        else if(p->name() == Blue)
+        {
+          if(p->value() == "0")
+          {
+            digitalWrite(BLUE_PIN, LOW);
+          }
+          else
+          {
+            digitalWrite(BLUE_PIN, HIGH);
+          }
+        }
+        else if(p->name() == Green)
+        {
+          if(p->value() == "0")
+          {
+            digitalWrite(GREEN_PIN, LOW);
+          }
+          else
+          {
+            digitalWrite(GREEN_PIN, HIGH);
+          }
+        }
+    }
+ 
+    request->send(200, "text/plain", "message received");
+  });
  
   server.begin();
 
