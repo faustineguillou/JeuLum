@@ -12,40 +12,14 @@ const port = 8102; //Ouvre un port
 const server = require("http").createServer(app); // Création du server
 
 var etatButton=0;
-app.get("/bp", function (req, res) {
-    //Si un Bp a changé d'état (bas vers haut) !
-  
-    console.log(req.query.pressed);
-    res.sendStatus(200);
-    if(etatButton==1)
-    {
-        etatButton = 0;
-    }
-    else
-    {
-        etatButton = 1;
-    }
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", "http://192.168.0.100:80/?Blue="+etatButton);
-    xhr.send();
-    xhr.responseType = "json";
-    xhr.onload = () => {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-        const data = xhr.response;
-        console.log(data);
-    } else {
-        console.log(`Error: ${xhr.status}`);
-    }
-    };
-})
 
 
 
 app.get("/page", function (req, res) {
     //Si un Bp a changé d'état (bas vers haut) !
   
-    res.render("page2.ejs",{ nbbutton: 10});
+    res.render("page2.ejs",{ nbbutton: 1, valb: 0});
 })
 
 
@@ -56,8 +30,9 @@ app.get("/chcouleur", function (req, res) {
     console.log(req.query.ledverte);
     console.log(req.query.ledbleu);
     res.sendStatus(200);
-    envoi="http://192.168.0.100:80/chcouleur?Red="+req.query.ledrouge+"&Green="+req.query.ledverte+"&Blue="+req.query.ledblue;
+    envoi="http://192.168.0.101:80/chcouleur?Red="+req.query.ledrouge+"&Green="+req.query.ledverte+"&Blue="+req.query.ledbleu;
 
+    console.log(envoi);
     const xhr = new XMLHttpRequest();
     xhr.open("GET", envoi);
     xhr.send();
@@ -70,56 +45,45 @@ app.get("/chcouleur", function (req, res) {
         console.log(`Error: ${xhr.status}`);
     }
     };
+    console.log("fin");
 })
 
 app.get("/page", function (req, res) {
     //Si un Bp a changé d'état (bas vers haut) !
   
-    res.render("page2.ejs",{ nbbutton: 10});
+    res.render("page2.ejs",{ nbbutton: 2});
 })
 
 
-app.get("/chboutons", function (req, res) {
-    //Si un Bp a changé d'état (bas vers haut) !
-  
-    
-    res.sendStatus(200);
-    envoi="http://192.168.0.100:80/chboutons?value="+req.query.valbouton;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", envoi);
-    xhr.send();
-    xhr.responseType = "json";
-    xhr.onload = () => {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-        const data = xhr.response;
-        console.log(data);
-    } else {
-        console.log(`Error: ${xhr.status}`);
-    }
-    };
-})
 
 
 app.get("/value", function (req, res) {
     //Si un Bp a changé d'état (bas vers haut) !
   
-    
     res.sendStatus(200);
-    envoi="http://192.168.0.100:80/value";
+    console.log("reçoit requête pour récupérer valeur bouton");
+    envoi="http://192.168.0.101:80/value";
 
+    reponse="";
+    console.log("initialisation reponse");
     const xhr = new XMLHttpRequest();
     xhr.open("GET", envoi);
     xhr.send();
-    xhr.responseType = "json";
+    xhr.responseType = "text/plain";
+    console.log("avant onload");
     xhr.onload = () => {
     if (xhr.readyState == 4 && xhr.status == 200) {
-        const data = xhr.response;
-        console.log(data);
+        reponse = reponse + xhr.responseText;
+        console.log("la reponse est:", reponse);
+        res.end(reponse);
     } else {
         console.log(`Error: ${xhr.status}`);
+        res.end(reponse);
     }
     };
+    
+    console.log("fin requete value");
 })
 
 server.listen(port, () => console.log(`Listening on port :${port}`));

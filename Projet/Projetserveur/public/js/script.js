@@ -44,33 +44,28 @@ function senddata(ledrouge,ledverte,ledbleu)
     sendGetRequest(req);
 }
 
-function senddataboutons(idbutton)
+
+
+function askvaluebouton()
 {
     
-    
-        var valbouton=document.getElementById(idbutton).value;
-        
-    
-    
-
-
-    req="http://127.0.0.1:8102/chboutons?value="+valbouton;
-
-    sendGetRequest(req);
-}
-
-function askvaluebouton(idbutton)
-{
-    
-    
-        
-    
+    req="http://127.0.0.1:8102/value"
+    console.log("askvaluebutton");
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", req);
+    xhr.send();
+    xhr.responseType = "text";
+    xhr.onload = () => {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+        console.log("on veut la réponse stp");
+        console.log(xhr.responseText);
+        document.getElementById(1).value = xhr.responseText;
+    } else {
+        console.log(`Error: ${xhr.status}`);
+    }
+    };
     
 
-
-    req="http://127.0.0.1:8102/value?button="+
-
-    sendGetRequest(req);
 }
 
 
