@@ -15,6 +15,97 @@ require('dns').lookup(require('os').hostname(), function (err, add, fam) {
 //var expressWs = require('express-ws')(app,server);
 const WebSocket = require('ws');
 const s = new WebSocket.Server({ server });
+/*********************************************GAME CLASS **************************************************/
+class Game  //Création de la class game qui contrôle la boucle du jeu
+{
+    GameLaunch;
+    randEsp;
+    randLed;
+    numberButtonPressed;
+    timer;
+
+    constructor()
+    {
+        this.GameLaunch = false;
+    }
+
+    getGameLaunch()
+    {
+        return this.GameLaunch;
+    }
+
+    getRandEsp()
+    {
+        return this.randEsp;
+    }
+
+    getRandLed()
+    {
+        return this.randLed;
+    }
+
+    #getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
+    cutTimer()
+    {
+        clearTimeout(this.timer);
+        this.numberButtonPressed = this.numberButtonPressed + 1;
+        var request = '{type = "server", esp = ' + this.randEsp + ', led = ' + this.randLed+ ', action = 0}';
+        sendMessage(request)
+        if(this.numberButtonPressed == 10)
+        {
+            this.#endGameGagne();
+        }
+        else
+        {
+            this.#loopGame();
+        }
+    }
+
+    startGame()
+    {
+        console.log("La partie se lance");
+        this.GameLaunch = true;
+        this.numberButtonPressed = 0;
+        this.#loopGame();
+    }
+
+    endGameLose()
+    {
+        console.log("Vous avez perdu !");
+        this.GameLaunch = false;
+        var request = '{type = "server", esp = ' + this.randEsp + ', led = ' + this.randLed+ ', action = 0}';
+        sendMessage(request)
+    }
+
+    #endGameGagne()
+    {
+        console.log("Vous avez gagne !")
+        this.GameLaunch = false;
+    }
+
+    #loopGame()
+    {
+        this.randEsp = this.#getRandomInt(nbEsp) + 1;
+        this.randLed = this.#getRandomInt(2) + 1;
+        var request = '{type = "server", esp = ' + this.randEsp + ', led = ' + this.randLed+ ', action = 1}';
+        sendMessage(request)
+        this.timer = setTimeout(function() {game.endGameLose()}, 5000);
+    }
+}
+
+function sendMessage(message)
+{
+    s.clients.forEach(function(client){ //broadcast incoming message to all clients (s.clients)
+        client.send(message)
+    });
+}
+//CREATE GAME
+var game = new Game();
+//NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP
+var nbEsp = 1;
 //when browser sends get request, send html file to browser
 // viewed at http://localhost:3000
 app.get('/', function(req, res) {
@@ -23,7 +114,7 @@ app.get('/', function(req, res) {
 //*************************************************************************************************************************
 //***************************ws chat server********************************************************************************
 //app.ws('/echo', function(ws, req) {
-s.on('connection',function(ws,req){
+s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
 /******* when server receives messsage from client trigger function with argument message *****/
     ws.on('message', function(message){
         console.log("Received: "+message);
@@ -32,7 +123,25 @@ s.on('connection',function(ws,req){
                 client.send("broadcast: " +message);
             }
         });*/
-        
+        const messageJson = JSON.parse(message);
+        if(messageJson.type == "esp")
+        {
+            /*if(messageJson.game == 0 && !game.GameLaunch())
+            {
+                if()
+                {
+
+                }
+            }
+            else if(messageJson.game == 1 && game.GameLaunch())
+            {
+
+            }*/
+        }
+        else if(messageJson.type == "web")
+        {
+
+        }
 // ws.send("From Server only to sender: "+ message); //send to client where message is from
     });
 

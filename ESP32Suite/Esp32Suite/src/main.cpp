@@ -108,7 +108,7 @@ void loop(){
     Serial.println("The state changed from LOW to HIGH, BP1");
     if(WiFi.status()== WL_CONNECTED)
     {
-      String request = "{type = \"esp\", game = 1, bp=1}";
+      String request = "{type = \"esp\", game = 1, esp = " + String(ESPNUMBER) + ", bp=1}";
       webSocket.sendTXT(request);
     }
   }
@@ -116,7 +116,7 @@ void loop(){
     Serial.println("The state changed from LOW to HIGH, BP2");
     if(WiFi.status()== WL_CONNECTED)
     {
-      String request = "{type = \"esp\", game = 1, bp=2}";
+      String request = "{type = \"esp\", game = 1, esp = " + String(ESPNUMBER) + ", bp=2}";
       webSocket.sendTXT(request);
     }
   }
@@ -126,7 +126,7 @@ void loop(){
     Serial.println("Request to launch game");
     if(WiFi.status() == WL_CONNECTED)
     {
-      String request = "{type = \"esp\", game = 0}";
+      String request = "{type = \"esp\", esp = " + String(ESPNUMBER) + ", game = 0}";
       webSocket.sendTXT(request);
     }
   }
