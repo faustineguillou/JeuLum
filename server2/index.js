@@ -52,7 +52,8 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
     {
         clearTimeout(this.timer);
         this.numberButtonPressed = this.numberButtonPressed + 1;
-        var request = '{type = "server", esp = ' + this.randEsp + ', led = ' + this.randLed+ ', action = 0}';
+        var request = '{"type" : "server", "for" : "esp", "esp" : ' + this.randEsp + 
+            ', "led" : ' + this.randLed+ ', "action" : 0}';
         sendMessage(request)
         if(this.numberButtonPressed == 10)
         {
@@ -76,7 +77,8 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
     {
         console.log("Vous avez perdu !");
         this.GameLaunch = false;
-        var request = '{type = "server", esp = ' + this.randEsp + ', led = ' + this.randLed+ ', action = 0}';
+        var request = '{"type" : "server", "for" : "esp", "esp" : ' + this.randEsp + 
+            ', "led" : ' + this.randLed+ ', "action" : 0}';
         sendMessage(request)
     }
 
@@ -90,7 +92,8 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
     {
         this.randEsp = this.#getRandomInt(nbEsp) + 1;
         this.randLed = this.#getRandomInt(2) + 1;
-        var request = '{type = "server", esp = ' + this.randEsp + ', led = ' + this.randLed+ ', action = 1}';
+        var request = '{"type" : "server", "for" : "esp", "esp" : ' + this.randEsp + 
+            ', "led" : ' + this.randLed+ ', "action" : 1}';
         sendMessage(request)
         this.timer = setTimeout(function() {game.endGameLose()}, 5000);
     }
@@ -104,7 +107,7 @@ function sendMessage(message)
 }
 //CREATE GAME
 var game = new Game();
-//NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP
+//NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP EN FONCTION DU NOMBRE D'ESP CONNECTE AU PROJET
 var nbEsp = 1;
 //when browser sends get request, send html file to browser
 // viewed at http://localhost:3000
@@ -126,17 +129,17 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
         const messageJson = JSON.parse(message);
         if(messageJson.type == "esp")
         {
-            /*if(messageJson.game == 0 && !game.GameLaunch())
+            if(messageJson.game == 0 && !game.getGameLaunch() && messageJson.esp == 1)
             {
-                if()
-                {
-
-                }
+                console.log("Nombre ESP : " + nbEsp);
+                game = new Game();
+                game.startGame();
             }
-            else if(messageJson.game == 1 && game.GameLaunch())
+            else if(messageJson.game == 1 && game.getGameLaunch() && messageJson.esp == game.getRandEsp()
+                && messageJson.bp == game.getRandLed())
             {
-
-            }*/
+                game.cutTimer();
+            }
         }
         else if(messageJson.type == "web")
         {

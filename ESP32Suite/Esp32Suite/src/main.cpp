@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WebSocketsClient.h>
 #include <WiFi.h>
+#include <ArduinoJson.h>
 
 const char* ssid = "HeikoFaustine";
 const char* password =  "01234567";
@@ -28,6 +29,8 @@ const int ledNumber [2] = {1, 2};
 // Variables will change:
 int lastState1 = HIGH; int lastState2 = HIGH; // the previous state from the input pin
 int currentState1; int currentState2;     // the current reading from the input pin
+StaticJsonDocument<500> jsonBuffer;
+DeserializationError error;
 
 void switchOnRed(int led, boolean value)
 {
@@ -79,6 +82,12 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length){
 		case WStype_TEXT:
 			USE_SERIAL.printf("[WSc] get text: %s\n", payload);
 
+      error = deserializeJson(jsonBuffer, payload);
+
+      if(jsonBuffer["esp"] == ESPNUMBER && jsonBuffer["for"] == "esp")
+      {
+        switchOnBlue(jsonBuffer["led"], jsonBuffer["action"]);
+      }
 			// send message to server
 			// webSocket.sendTXT("message here");
 			break;
@@ -108,7 +117,7 @@ void loop(){
     Serial.println("The state changed from LOW to HIGH, BP1");
     if(WiFi.status()== WL_CONNECTED)
     {
-      String request = "{type = \"esp\", game = 1, esp = " + String(ESPNUMBER) + ", bp=1}";
+      String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 1}";
       webSocket.sendTXT(request);
     }
   }
@@ -116,7 +125,7 @@ void loop(){
     Serial.println("The state changed from LOW to HIGH, BP2");
     if(WiFi.status()== WL_CONNECTED)
     {
-      String request = "{type = \"esp\", game = 1, esp = " + String(ESPNUMBER) + ", bp=2}";
+      String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 2}";
       webSocket.sendTXT(request);
     }
   }
@@ -126,7 +135,7 @@ void loop(){
     Serial.println("Request to launch game");
     if(WiFi.status() == WL_CONNECTED)
     {
-      String request = "{type = \"esp\", esp = " + String(ESPNUMBER) + ", game = 0}";
+      String request = "{\"type\" : \"esp\", \"esp\" : " + String(ESPNUMBER) + ", \"game\" : 0}";
       webSocket.sendTXT(request);
     }
   }
