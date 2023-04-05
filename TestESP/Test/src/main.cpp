@@ -1,11 +1,11 @@
 #include <Arduino.h>
 
 #define RED_PIN1 25
-#define BLUE_PIN1 27
-#define GREEN_PIN1 26
+#define BLUE_PIN1 26
+#define GREEN_PIN1 27
 #define RED_PIN2 18
-#define BLUE_PIN2 19
-#define GREEN_PIN2 21
+#define BLUE_PIN2 21
+#define GREEN_PIN2 19
 #define BUTTON_PIN1 23
 #define BUTTON_PIN2 33
 
@@ -22,13 +22,27 @@ void loop() {
   if(lastState1 == LOW && currentState1 == HIGH)
   {
     Serial.println("The state changed from LOW to HIGH, BP1");
-    digitalWrite(GREEN_PIN1, HIGH);
+    if(digitalRead(RED_PIN1) == HIGH)
+    {
+      digitalWrite(RED_PIN1, LOW);
+    }
+    else
+    {
+      digitalWrite(RED_PIN1, HIGH);
+    }
   }
 
   if(lastState2 == LOW && currentState2 == HIGH)
   {
     Serial.println("The state changed from LOW to HIGH, BP2");
-    digitalWrite(GREEN_PIN2, HIGH);
+    if(digitalRead(RED_PIN2) == HIGH)
+    {
+      digitalWrite(RED_PIN2, LOW);
+    }
+    else
+    {
+      digitalWrite(RED_PIN2, HIGH);
+    }
   }
 
   lastState1 = currentState1;

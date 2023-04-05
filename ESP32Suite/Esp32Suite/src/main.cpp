@@ -32,6 +32,8 @@ int currentState1; int currentState2;     // the current reading from the input 
 StaticJsonDocument<500> jsonBuffer;
 DeserializationError error;
 
+//SWITCH ON-OFF LES LEDS EN FONCTION DU BOUTON 
+
 void switchOnRed(int led, boolean value)
 {
   if(led==1)
@@ -68,6 +70,8 @@ void switchOnGreen(int led, boolean value)
   }
 }
 
+//WEBSOCKET EVENT
+
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length){
     switch(type) {
 		case WStype_DISCONNECTED:
@@ -79,7 +83,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length){
 			// send message to server when Connected
 			//webSocket.sendTXT("Connected");
 			break;
-		case WStype_TEXT:
+		case WStype_TEXT: //LE CLIENT RECOIT UN MESSAGE EN JSON
 			USE_SERIAL.printf("[WSc] get text: %s\n", payload);
 
       error = deserializeJson(jsonBuffer, payload);
@@ -113,23 +117,24 @@ void loop(){
   currentState1 = digitalRead(BUTTON_PIN1);
   currentState2 = digitalRead(BUTTON_PIN2);
 
-  if(lastState1 == LOW && currentState1 == HIGH) {
+  if(lastState1 == LOW && currentState1 == HIGH) { //SI LE BP 1 DE L'ESP EST APPUYE
     Serial.println("The state changed from LOW to HIGH, BP1");
     if(WiFi.status()== WL_CONNECTED)
     {
       String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 1}";
-      webSocket.sendTXT(request);
+      webSocket.sendTXT(request); //ENVOIE LA REQUETE AU SERVEUR
     }
   }
-  if(lastState2 == LOW && currentState2 == HIGH) {
+  if(lastState2 == LOW && currentState2 == HIGH) { //SI LE BP 2 DE L'ESP EST APPUYE
     Serial.println("The state changed from LOW to HIGH, BP2");
     if(WiFi.status()== WL_CONNECTED)
     {
       String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 2}";
-      webSocket.sendTXT(request);
+      webSocket.sendTXT(request); //ENVOIE LA REQUETE AU SERVEUR
     }
   }
 
+  //CONDITION PERMETTANT DE LANCER LA PARTIE SI ON APPUIE SUR LES 2 BOUTONS DE L'ESP 1
   if((lastState1 == LOW && currentState1 == HIGH) && (lastState2 == LOW && currentState2 == HIGH))
   {
     Serial.println("Request to launch game");
@@ -148,6 +153,7 @@ void loop(){
 void setup(){
   Serial.begin(115200);
 
+  //INITIALISE LES PINS LEDS ET BOUTONS
   pinMode(BUTTON_PIN1, INPUT_PULLUP);
   pinMode(BUTTON_PIN2, INPUT_PULLUP);
   pinMode(RED_PIN1, OUTPUT);
@@ -163,6 +169,7 @@ void setup(){
   digitalWrite(GREEN_PIN2, LOW);
   digitalWrite(RED_PIN2, LOW);
   
+  //CONNECTION AU WIFI
   WiFi.begin(ssid, password);
     
   while (WiFi.status() != WL_CONNECTED) {

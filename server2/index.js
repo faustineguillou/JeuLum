@@ -24,30 +24,36 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
     numberButtonPressed;
     timer;
 
+    //CONSTRUCTEUR DE LA CLASS GAME
     constructor()
     {
         this.GameLaunch = false;
     }
 
+    //GET DE GameLaunch
     getGameLaunch()
     {
         return this.GameLaunch;
     }
 
+    //GET DE randEsp
     getRandEsp()
     {
         return this.randEsp;
     }
 
+    //GET DE randLed
     getRandLed()
     {
         return this.randLed;
     }
 
+    //FONCTION QUI RETURN UN RANDOM ENTRE 0 ET max
     #getRandomInt(max) {
         return Math.floor(Math.random() * max);
     }
 
+    //PERMET DE CLEAR LE TIMER, VERIFIE ENSUITE SI BESOIN DE RELANCER LA MAIN LOOP OU SI JEU TERMINE
     cutTimer()
     {
         clearTimeout(this.timer);
@@ -65,6 +71,7 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
         }
     }
 
+    //LANCE LE JEU, SET LE GameLaunch A TRUE ET INIT numberButtonPressed A ZERO, LANCE LA LOOP ENSUITE
     startGame()
     {
         console.log("La partie se lance");
@@ -73,6 +80,7 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
         this.#loopGame();
     }
 
+    //SI JAMAIS LA PARTIE EST PERDUE CETTE FONCTION SE LANCE ET VA REINITIALISER LA PARTIE
     endGameLose()
     {
         console.log("Vous avez perdu !");
@@ -82,12 +90,14 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
         sendMessage(request)
     }
 
+    //SI JAMAIS LA PARTIE EST GAGNE, FAIS LE CONTRAIRE DE LA FONCTION PERDRE
     #endGameGagne()
     {
         console.log("Vous avez gagne !")
         this.GameLaunch = false;
     }
 
+    //PERMET DE DETERMINER LE RANDESP, RANDLED, ENVOIE LE MESSAGE EN JSON A TOUS LES ESP, SET UN TIMER
     #loopGame()
     {
         this.randEsp = this.#getRandomInt(nbEsp) + 1;
@@ -99,6 +109,7 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
     }
 }
 
+//PERMET D'ENVOYER UN MESSAGE A TOUS LES CLIENTS CONNECTES A LA WEBSOCKET
 function sendMessage(message)
 {
     s.clients.forEach(function(client){ //broadcast incoming message to all clients (s.clients)
@@ -126,22 +137,23 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
                 client.send("broadcast: " +message);
             }
         });*/
+        //RECUPERE LA MESSAGE JSON
         const messageJson = JSON.parse(message);
-        if(messageJson.type == "esp")
+        if(messageJson.type == "esp") //VERIFIE QUE LE MESSAGE VIENT D'UN ESP
         {
-            if(messageJson.game == 0 && !game.getGameLaunch() && messageJson.esp == 1)
+            if(messageJson.game == 0 && !game.getGameLaunch() && messageJson.esp == 1) //CONDITION PERMETTANT DE LANCER LA PARTIE
             {
                 console.log("Nombre ESP : " + nbEsp);
                 game = new Game();
                 game.startGame();
             }
             else if(messageJson.game == 1 && game.getGameLaunch() && messageJson.esp == game.getRandEsp()
-                && messageJson.bp == game.getRandLed())
+                && messageJson.bp == game.getRandLed()) //CONDITION PERMETTANT DE VERIFIER SI LE BON BOUTON A ETE APPUYE
             {
                 game.cutTimer();
             }
         }
-        else if(messageJson.type == "web")
+        else if(messageJson.type == "web") //VERIFIE QUE LE MESSAGE VIENT DU CLIENT WEB
         {
 
         }
