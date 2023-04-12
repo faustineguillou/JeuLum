@@ -16,7 +16,7 @@ require('dns').lookup(require('os').hostname(), function (err, add, fam) {
 const WebSocket = require('ws');
 const s = new WebSocket.Server({ server });
 /*********************************************GAME CLASS **************************************************/
-class Game  //Création de la class game qui contrôle la boucle du jeu
+class GameReflex  //Création de la class gameReflex qui contrôle la boucle du jeu
 {
     GameLaunch;
     randEsp;
@@ -93,6 +93,8 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
     //SI JAMAIS LA PARTIE EST GAGNE, FAIS LE CONTRAIRE DE LA FONCTION PERDRE
     #endGameGagne()
     {
+        var request = '{"type" : "server", "for" : "esp", "end" : 1}';
+        sendMessage(request)
         console.log("Vous avez gagne !")
         this.GameLaunch = false;
     }
@@ -105,19 +107,128 @@ class Game  //Création de la class game qui contrôle la boucle du jeu
         var request = '{"type" : "server", "for" : "esp", "esp" : ' + this.randEsp + 
             ', "led" : ' + this.randLed+ ', "action" : 1}';
         sendMessage(request)
-        this.timer = setTimeout(function() {game.endGameLose()}, 5000);
+        this.timer = setTimeout(function() {gameReflex.endGameLose()}, 5000);
+    }
+}
+
+class GameMemory
+{
+    listLed;
+    GameLaunch;
+    timer;
+    counter;
+
+    constructor()
+    {
+        this.listLed = [];
+        this.GameLaunch = false;
+        this.timer = null;
+        this.counter = 0;
+    }
+
+    getGameLaunch()
+    {
+        return this.GameLaunch;
+    }
+
+    #getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
+    startGame()
+    {
+        console.log("La partie se lance");
+        this.GameLaunch = true;
+        this.#pickRandomLed();
+    }
+
+    #pickRandomLed()
+    {
+        var led = this.#getRandomInt(nbEsp * 2) + 1;
+        this.listLed.push(led);
+        this.#loopShowLed();
+    }
+
+    #loopShowLed()
+    {
+        var request = '{"type" : "server", "for" : "esp", "led" : ' + this.listLed[this.counter] + ', "action" : 1, "color" : "blue"}';
+        sendMessage(request)
+        this.timer = setTimeout(function() {gameMemory.switchOff()}, 500);
+    }
+
+    switchOff()
+    {
+        var request = '{"type" : "server", "for" : "esp", "led" : ' + this.listLed[this.counter] + ', "action" : 0, "color" : "blue"}';
+        sendMessage(request)
+        this.counter = this.counter + 1;
+        if(this.counter < this.listLed.length)
+        {
+            this.#loopShowLed();
+        }
+        else
+        {
+            this.counter = 0;
+            console.log("You're turn to play !");
+        }
+    }
+
+    checkGuess(led)
+    {
+        if(led == this.listLed[this.counter])
+        {
+            var request = '{"type" : "server", "for" : "esp", "led" : ' + led + ', "action" : 1, "color" : "green"}';
+            sendMessage(request)
+            this.timer = setTimeout(function() {gameMemory.switchOffCheckGuess()}, 500);
+        }
+        else
+        {
+            var request = '{"type" : "server", "for" : "esp", "led" : ' + led + ', "action" : 1, "color" : "red"}';
+            sendMessage(request)
+            this.timer = setTimeout(function() {gameMemory.endGameLose(led)}, 500);
+        }
+    }
+
+    switchOffCheckGuess()
+    {
+        var request = '{"type" : "server", "for" : "esp", "led" : ' + this.listLed[this.counter] + ', "action" : 0, "color" : "green"}';
+        sendMessage(request)
+        this.counter = this.counter + 1;
+        if(this.counter == this.listLed.length)
+        {
+            this.counter = 0;
+            this.#pickRandomLed();
+        }
+    }
+
+    endGameLose(led)
+    {
+        console.log("Vous avez perdu !");
+        console.log("Compteur = " + this.counter)
+        //PROBLEME ICI AVEC LE COMPTEUR, IL FAUT AUSSI REUSSIR A REINIT game = 0 SUR LES CPP
+        var request = '{"type" : "server", "for" : "esp", "led" : ' + led + ', "action" : 0, "color" : "red"}';
+        sendMessage(request)
+        this.timer = setTimeout(function() {gameMemory.finish()}, 500);
+    }
+
+    finish()
+    {
+        this.GameLaunch = false;
+        var request = '{"type" : "server", "for" : "esp", "end" : 1}';
+        sendMessage(request)
     }
 }
 
 //PERMET D'ENVOYER UN MESSAGE A TOUS LES CLIENTS CONNECTES A LA WEBSOCKET
 function sendMessage(message)
 {
+    console.log("Sending : " + message);
     s.clients.forEach(function(client){ //broadcast incoming message to all clients (s.clients)
         client.send(message)
     });
 }
 //CREATE GAME
-var game = new Game();
+var gameReflex = new GameReflex();
+var gameMemory = new GameMemory();
 //NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP EN FONCTION DU NOMBRE D'ESP CONNECTE AU PROJET
 var nbEsp = 1;
 //when browser sends get request, send html file to browser
@@ -141,16 +252,22 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
         const messageJson = JSON.parse(message);
         if(messageJson.type == "esp") //VERIFIE QUE LE MESSAGE VIENT D'UN ESP
         {
-            if(messageJson.game == 0 && !game.getGameLaunch() && messageJson.esp == 1) //CONDITION PERMETTANT DE LANCER LA PARTIE
+            if(messageJson.game == 0 && !gameReflex.getGameLaunch() && messageJson.esp == 1) //CONDITION PERMETTANT DE LANCER LA PARTIE
             {
                 console.log("Nombre ESP : " + nbEsp);
-                game = new Game();
-                game.startGame();
+                //gameReflex = new GameReflex();
+                //gameReflex.startGame();
+                gameMemory = new GameMemory();
+                gameMemory.startGame();
             }
-            else if(messageJson.game == 1 && game.getGameLaunch() && messageJson.esp == game.getRandEsp()
-                && messageJson.bp == game.getRandLed()) //CONDITION PERMETTANT DE VERIFIER SI LE BON BOUTON A ETE APPUYE
+            else if(messageJson.game == 1 && gameReflex.getGameLaunch() && messageJson.esp == game.getRandEsp()
+                && messageJson.bp == gameReflex.getRandLed()) //CONDITION PERMETTANT DE VERIFIER SI LE BON BOUTON A ETE APPUYE
             {
-                game.cutTimer();
+                gameReflex.cutTimer();
+            }
+            else if(messageJson.game == 2 && gameMemory.getGameLaunch())
+            {
+                gameMemory.checkGuess(messageJson.led);
             }
         }
         else if(messageJson.type == "web") //VERIFIE QUE LE MESSAGE VIENT DU CLIENT WEB
