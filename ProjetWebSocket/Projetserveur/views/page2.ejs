@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset = “utf-8”>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <title>Page Jeu Manuel</title>
+    <link rel="stylesheet" href=/css/style.css>
+    <meta name="author" content="Faustine"/>
+    <meta name="location" content="Angers"/>
+    <script src="/js/script.js"></script>
+</head>
+<body>
+ 
+    <!-- Nav Bar-->
+
+    <nav class="nav bg-light justify-content-center">
+        <a href="#accueil" class="nav-link text-dark">Accueil</a>
+        <a href="#start" class="nav-link text-dark">Lancer le jeu</a>
+        <a href="#lumieres" class="nav-link text-dark">Lumières</a>
+        <a href="#boutons" class="nav-link text-dark">Boutons</a>
+    </nav>
+
+
+    <!--Home-->
+    <section id=accueil class="accueil bg-dark d-flex w-100 h-100 flex-column justify-content-center align-items-center">
+        <h1 class="display-1 text-white text-center">Jeu interactif</h1>
+        <p class="lead text-center text-white"> Cette page simule le jeu des lumières. Elle permettra de tester les fonctionnalités. </p>
+            
+    </section>
+
+    <section id=start class="start d-flex w-100 h-100 flex-column justify-content-center align-items-center">
+        <h1 class="display-1 text-white text-center">Lancer le jeu</h1>
+        <!--<p class="lead text-center text-white"> Choisissez votre mode de jeu </p>-->
+        <fieldset>
+            <legend class="text-white">Choisissez votre mode de jeu</legend>
+        
+            <div>
+              <input type="radio" id="Reflexe" name="jeu" value="Réflexe"
+                     checked>
+              <label class="text-white" for="Reflexe">Reflexe</label>
+            </div>
+        
+            <div>
+              <input type="radio" id="Memoire" name="jeu" value="Mémoire">
+              <label class="text-white" for="Memoire">Mémoire</label>
+            </div>
+        </fieldset>
+        <p class="lead text-center text-white"> Appuyer sur ce bouton pour lancer le jeu </p>
+        <button class="boutonstart" id="boutonstart" onclick="startjeu();">Start</button>
+        <p class="text-success text-uppercase" id="affichagestart"></p>
+
+            
+    </section>
+
+    <!--Affichage données-->
+    <section id=lumieres class="container-fluid bg-dark d-flex w-100 h-100 flex-column justify-content-center align-items-center">
+        <h1 class="display-4 text-white text-center">Affichage des données</h1>
+        
+    
+        
+        <div class="row">
+            <div class="col">
+                <p class=" lead text-white"> Liste des ESP connectés</p>
+                <button class="boutonesp" id="boutonesp" onclick="getesp();">ESP Connectés</button>
+                <ul id="ulaffespco" class="text-white">
+
+                </ul>
+                
+            </div>
+        </div>
+        
+        <button class="changemode btn btn-success" id="changemode" onclick="changemode();">Changer mode</button>
+        <p id="pmode" class="text-white" value="Lecture">Lecture</p>
+        <div class="classeboutons container d-flex flex-row">
+            
+            <% for (var i=1; i<=nbEsp; i++) { %>
+            
+            
+                <% idEsp = "esp" + i %>
+                <%console.log(idEsp)%>
+            
+            <h3 class="text-white text-align-center">Esp <%=i%></h3>
+        
+            <div class=" row d-flex flex-row pt-5 justify-content-start" id=<%= idEsp%>
+                <div id=<%="partie1esp"+i%> class="row">
+                    <div id=<%= "rgb1esp" + i%> class="lead text-white pt-3 d-flex flex-column align-items-end justify-content-end"> 
+                        <p>Led <%=1+2*(i-1)%></p>
+        
+
+                        <p>R <input id=<%="idledrouge1esp"+i%> type="number" name="ledrouge" min="0" max="1" disabled/></p>
+                
+
+                        <p>G
+                        <input id=<%="idledverte1esp"+i%> type="number" name="ledverte" min="0" max="1" disabled /> </p>
+                
+
+                        <p>B
+                        <input id=<%="idledbleu1esp"+i%> type="number" name="ledbleu" min="0" max="1" disabled/></p>
+
+                        <button type="button" id=<%="boutonsenddata1esp"+i%> class="btn btn-success" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
+                    </div>
+                    <div class="d-flex flex-column align-items-end justify-content-end text-white" id=<%="button1esp"+i%>>
+                        
+                        <p class="justify-content-start align-items-start">Bouton <%=1+2*(i-1)%></p>
+                        <input type="number" id=<%="form1esp"+i%> name="button1" value ="1"
+                        min="0" max="1" disabled >
+                        
+                            <button type="button" id=<%="boutonsenddatabutton1esp"+i%> class="btn btn-primary" onclick="JavaScript:askvaluebouton();">Ask Value</button>
+                        
+                    </div>
+                </div>
+                <div id=<%="partie2esp"+i%> class="row">
+                    <div id=<%= "rgb2esp" + i%> class="lead text-white pt-3 d-flex flex-column align-items-end justify-content-end"> 
+                        <p>Led <%=2+2*(i-1)%></p>
+        
+
+                        <p>R <input id=<%="idledrouge2esp"+i%> type="number" name="ledrouge" min="0" max="1" disabled/></p>
+                
+
+                        <p>G
+                        <input id=<%="idledverte2esp"+i%> type="number" name="ledverte" min="0" max="1" disabled /> </p>
+                
+
+                        <p>B
+                        <input id=<%="idledbleu2esp"+i%> type="number" name="ledbleu" min="0" max="1" disabled/></p>
+
+                        <button type="button" id=<%="boutonsenddata2esp"+i%> class="btn btn-success" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
+                    </div>
+                    <div class="d-flex flex-column align-items-end justify-content-end text-white" id=<%="button2esp"+i%>>
+                        
+                        <p class="justify-content-start align-items-start">Bouton <%=2+2*(i-1)%></p>
+                        <input type="number" id=<%="form2esp"+i%> name="button1" value ="1"
+                        min="0" max="1" disabled >
+                        
+                            <button type="button" id=<%="boutonsenddatabutton2esp"+i%> class="btn btn-primary" onclick="JavaScript:askvaluebouton();">Ask Value</button>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            
+        </div>
+       
+        <% } %>
+        
+        
+            
+    </section>
+
+
+
+    
+
+
+
+    
+        
+            
+    </section>
+    <footer class="fin text-center p-3" >
+        Jeu des lumières - Faustine Guillou, Heiko Viel
+    </footer>
+
+
+    
+
+</body>
+</html>

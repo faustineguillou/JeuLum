@@ -1,0 +1,4 @@
+nmp init dans le dossier ( package.json)
+utilisation de express ( voir tuto) ( gère construction serveur) npm install express
+
+npm install ejs
