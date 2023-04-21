@@ -302,6 +302,7 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
                     value :1,
                     
                   };
+                  console.log("server a recu message on a appuyé sur bp1");
 
 
                   sendMessage(msg);

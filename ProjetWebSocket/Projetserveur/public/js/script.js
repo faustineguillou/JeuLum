@@ -1,18 +1,13 @@
 var nombresespco=0
 
 
-
 const htmlSocket = new WebSocket(
   "ws://localhost:3000"
 );
 
-ws.on('message', function(message){
-  console.log("Received: "+message);
-  /*s.clients.forEach(function(client){ //broadcast incoming message to all clients (s.clients)
-      if(client!=ws && client.readyState ){ //except to the same client (ws) that sent this message
-          client.send("broadcast: " +message);
-      }
-  });*/
+htmlSocket.onmessage=function(ms)
+{
+  
   const messageJson = JSON.parse(message);
   if(messageJson.type == "boutonweb")
         {
@@ -56,7 +51,7 @@ ws.on('message', function(message){
          
 
         }
-})
+}
 
 function voirrgb(id)
 {
@@ -117,83 +112,36 @@ function senddata(ledrouge,ledverte,ledbleu)
       exampleSocket.send(JSON.stringify(msg));
 
 
-      exampleSocket.onmessage = function(event) {
-        
-        var text = "";
-        var msg = JSON.parse(event.data);
-        var time = new Date(msg.date);
-        var timeStr = time.toLocaleTimeString();
       
-        switch(msg.type) {
-          
-          case "red":
-            text = "<b>User <em>" + msg.name + "</em> signed in at " + timeStr + "</b><br>";
-            break;
-          case "message":
-            text = "(" + timeStr + ") <b>" + msg.name + "</b>: " + msg.text + "<br>";
-            break;
-          case "rejectusername":
-            text = "<b>Your username has been set to <em>" + msg.name + "</em> because the name you chose is in use.</b><br>"
-            break;
-          case "userlist":
-            var ul = "";
-            for (i=0; i < msg.users.length; i++) {
-              ul += msg.users[i] + "<br>";
-            }
-            document.getElementById("userlistbox").innerHTML = ul;
-            break;
-        }
-      
-        if (text.length) {
-          f.write(text);
-          document.getElementById("chatbox").contentWindow.scrollByPages(1);
-        }
-      };
 
 
     
 }
 
+/*
+const departMinutes = 5
+let temps = departMinutes * 60
+
+const timerElement = document.getElementById("timer")
+
+setInterval(() => {
+  let minutes = parseInt(temps / 60, 10)
+  let secondes = parseInt(temps % 60, 10)
+
+  minutes = minutes < 10 ? "0" + minutes : minutes
+  secondes = secondes < 10 ? "0" + secondes : secondes
+
+  timerElement.innerText = `${minutes}:${secondes}`
+  temps = temps <= 0 ? 0 : temps - 1
+}, 1000)
+*/
 
 
-function askvaluebouton()
-{
     
-    req="http://127.0.0.1:8102/value"
-    console.log("askvaluebutton");
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", req);
-    xhr.send();
-    xhr.responseType = "text";
-    xhr.onload = () => {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-        console.log("on veut la réponse stp");
-        console.log(xhr.responseText);
-        document.getElementById(1).value = xhr.responseText;
-    } else {
-        console.log(`Error: ${xhr.status}`);
-    }
-    };
-    
-
-}
 
 
-function sendGetRequest(getRequest)
-{
-    const xhr = new XMLHttpRequest();
-    const req = getRequest;
-    xhr.open("GET", req);
-    xhr.send();
-    xhr.responseType = "";
-    xhr.onload = () => {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-        const data = xhr.responseText;
-    } else {
-        console.log(`Error: ${xhr.status}`);
-    }
-    };
-}
+
+
 
 
 function startjeu()
@@ -207,9 +155,7 @@ function startjeu()
     
   };
 
-  /*htmlSocket.onopen = () => */
   htmlSocket.send(JSON.stringify(msg)); 
-  // waiting for the socket connection to be opened to send the msg object as a JSON-formatted string.
   console.log("2");
   htmlSocket.onmessage = function(event) {
     console.log("jeu commencé");
@@ -221,39 +167,55 @@ function changemode(){
 
 
   var p=document.getElementById('pmode');
-  var r=document.getElementById('idledrouge');
-  var b=document.getElementById('idledbleu');
-  var v=document.getElementById('idledverte');
-  var bouton=document.getElementById('boutonsenddata');
-  var bouton2=document.getElementById('boutonsenddata2');
-  var textb=document.getElementsByName('button1');
   console.log("p", p.value);
   if(p.innerHTML=="Lecture"){
     console.log("lecture");
     p.innerHTML="Ecriture";
     p.value="Ecriture";
-    p.value="Lecture";
-    r.disabled=false;
-    b.disabled=false;
-    v.disabled=false;
-    textb.disabled=false;
-    bouton.style.display = 'block';
-    bouton2.style.display = 'block';
+    console.log(p.value);
+    console.log("nb", nombresespco);
+    for (let i = 1; i <= nombresespco; i++){
+      console.log(i);
+      document.getElementById('idledrouge1esp'+i).disabled=false;
+      document.getElementById('idledrouge2esp'+i).disabled=false;
+      document.getElementById('idledbleu1esp'+i).disabled=false;
+      document.getElementById('idledbleu2esp'+i).disabled=false;
+      document.getElementById('idledverte1esp'+i).disabled=false;
+      document.getElementById('idledverte2esp'+i).disabled=false;
+      document.getElementById('boutonsenddatabutton1esp'+i).style.display = 'block';
+      document.getElementById('boutonsenddatabutton2esp'+i).style.display = 'block';
+      document.getElementById('boutonsenddata2esp'+i).style.display = 'block';
+      document.getElementById('boutonsenddata1esp'+i).style.display = 'block';
+      document.getElementById('form1esp'+i).disabled=false;
+      document.getElementById('form2esp'+i).disabled=false;
+
   }
+}
   else{
     console.log("ecriture");
     p.innerHTML="Lecture";
     p.value="Lecture";
-    r.disabled=true;
-    b.disabled=true;
-    v.disabled=true;
-    textb.disabled=true;
-    bouton.style.display = 'none';
-    bouton2.style.display = 'none';
+    console.log(p.value);
+    for(let i = 1; i <= nombresespco; i++){
+      console.log(i);
+
+      document.getElementById('idledrouge1esp'+i).disabled=true;
+      document.getElementById('idledrouge2esp'+i).disabled=true;
+      document.getElementById('idledbleu1esp'+i).disabled=true;
+      document.getElementById('idledbleu2esp'+i).disabled=true;
+      document.getElementById('idledverte1esp'+i).disabled=true;
+      document.getElementById('idledverte2esp'+i).disabled=true;
+      document.getElementById('boutonsenddatabutton1esp'+i).style.display = 'none';
+      document.getElementById('boutonsenddatabutton2esp'+i).style.display = 'none';
+      document.getElementById('boutonsenddata2esp'+i).style.display = 'none';
+      document.getElementById('boutonsenddata1esp'+i).style.display = 'none';
+      document.getElementById('form1esp'+i).disabled=true;
+      document.getElementById('form2esp'+i).disabled=true;
 
 
   }
 }
+  }
 
 
 var espdemande=0;
@@ -272,32 +234,19 @@ function getesp(){
     
   };
 
-  /*htmlSocket.onopen = () => */
+ 
   htmlSocket.send(JSON.stringify(msg)); 
-  // waiting for the socket connection to be opened to send the msg object as a JSON-formatted string.
+ 
   
   htmlSocket.onmessage = function(event) {
     response=event.data;
     
-    /*
-    liste=list(response)
-    liste.remove('"')
-    liste.remove(',')
-    liste.remove('[')
-    liste.remove(']')
-    print(liste)*/
-    
-/*
-    document.getElementById('affichageespco').innerHTML += "\n";*/
+   
     response = response.replaceAll('[', '')
     response = response.replaceAll(']', '')
     response = response.replaceAll('"', '')
     response = response.replaceAll(',', '')
-    /*
-    for (let i = 0; i < response.length; i++){
-      console.log(response[i]);
-      document.getElementById('affichageespco').innerHTML += response[i];
-      document.getElementById('affichageespco').innerHTML += "\n";*/
+   
       nombresespco=response.length;
     for (let i = 0; i < response.length; i++){
       var node = document.createElement('li');
@@ -305,31 +254,15 @@ function getesp(){
  
       document.getElementById('ulaffespco').appendChild(node);
 
-      var newDiv = document.createElement("div");
-      // et lui donne un peu de contenu
-  var newContent = document.createTextNode('Hi there and greetings!');
-  // ajoute le nœud texte au nouveau div créé
-  newDiv.appendChild(newContent);
-
-  // ajoute le nouvel élément créé et son contenu dans le DOM
-  var currentDiv = document.getElementById('div1');
-  document.body.insertBefore(newDiv, currentDiv);
+      
 
 
       
     }
-    espdemande=1
-
-
-    
-    
-    
+    espdemande=1;
     
 }
 }
-
-
-
 
 
 
@@ -341,39 +274,3 @@ var receive=function(msg)
   
   
 }
-/*
-htmlSocket.onmessage = function(event) {
-  var text = "";
-  var msg = JSON.parse(event.data);
-
-  switch(msg.type) {
-    case "esp":
-      msg.list.length
-      
-      break;
-    case "username":
-      text = "<b>User <em>" + msg.name + "</em> signed in at " + timeStr + "</b><br>";
-      break;
-    case "message":
-      text = "(" + timeStr + ") <b>" + msg.name + "</b>: " + msg.text + "<br>";
-      break;
-    case "rejectusername":
-      text = "<b>Your username has been set to <em>" + msg.name + "</em> because the name you chose is in use.</b><br>"
-      break;
-    case "userlist":
-      var ul = "";
-      for (i=0; i < msg.users.length; i++) {
-        ul += msg.users[i] + "<br>";
-      }
-      document.getElementById("userlistbox").innerHTML = ul;
-      break;
-  }
-
-  if (text.length) {
-    f.write(text);
-    document.getElementById("chatbox").contentWindow.scrollByPages(1);
-  }
-};
-
-*/
-  
