@@ -17,8 +17,7 @@
     <nav class="nav bg-light justify-content-center">
         <a href="#accueil" class="nav-link text-dark">Accueil</a>
         <a href="#start" class="nav-link text-dark">Lancer le jeu</a>
-        <a href="#lumieres" class="nav-link text-dark">Lumières</a>
-        <a href="#boutons" class="nav-link text-dark">Boutons</a>
+        <a href="#donnees" class="nav-link text-dark">Données</a>
     </nav>
 
 
@@ -49,12 +48,13 @@
         <p class="lead text-center text-white"> Appuyer sur ce bouton pour lancer le jeu </p>
         <button class="boutonstart" id="boutonstart" onclick="startjeu();">Start</button>
         <p class="text-success text-uppercase" id="affichagestart"></p>
+        <div id="timer"></div>
 
             
     </section>
 
     <!--Affichage données-->
-    <section id=lumieres class="container-fluid bg-dark d-flex w-100 h-100 flex-column justify-content-center align-items-center">
+    <section id=donnees class="container-fluid bg-dark d-flex w-100 h-100 flex-column justify-content-center align-items-center">
         <h1 class="display-4 text-white text-center">Affichage des données</h1>
         
     
@@ -69,21 +69,23 @@
                 
             </div>
         </div>
-        
         <button class="changemode btn btn-success" id="changemode" onclick="changemode();">Changer mode</button>
         <p id="pmode" class="text-white" value="Lecture">Lecture</p>
-        <div class="classeboutons container d-flex flex-row">
-            
+        </section>
+        <section class="container-fluid bg-dark d-flex w-100 h-100">
+        <div class="d-flex flex-row flex-wrap justify-content-center">
             <% for (var i=1; i<=nbEsp; i++) { %>
             
             
                 <% idEsp = "esp" + i %>
                 <%console.log(idEsp)%>
-            
-            <h3 class="text-white text-align-center">Esp <%=i%></h3>
         
-            <div class=" row d-flex flex-row pt-5 justify-content-start" id=<%= idEsp%>
-                <div id=<%="partie1esp"+i%> class="row">
+            
+            <div class="stylebord row m-3 justify-content-center" id=<%= idEsp%>>
+                <div class="justify-content-center mlr-5">
+                    <h3 class="text-white">Esp <%=i%></h3>
+                </div>
+                <div id=<%="partie1esp"+i%> class="row m-3">
                     <div id=<%= "rgb1esp" + i%> class="lead text-white pt-3 d-flex flex-column align-items-end justify-content-end"> 
                         <p>Led <%=1+2*(i-1)%></p>
         
@@ -92,25 +94,25 @@
                 
 
                         <p>G
-                        <input id=<%="idledverte1esp"+i%> type="number" name="ledverte" min="0" max="1" disabled /> </p>
+                        <input id=<%="idledverte1esp"+i%> type="number" name="ledverte" min="0" max="1" disabled/> </p>
                 
 
                         <p>B
                         <input id=<%="idledbleu1esp"+i%> type="number" name="ledbleu" min="0" max="1" disabled/></p>
 
-                        <button type="button" id=<%="boutonsenddata1esp"+i%> class="btn btn-success" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
+                        <button type="button" id=<%="boutonsenddata1esp"+i%> class="btn btn-success boutondisplay" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
                     </div>
-                    <div class="d-flex flex-column align-items-end justify-content-end text-white" id=<%="button1esp"+i%>>
+                    <div class="d-flex flex-column align-items-end justify-content-end text-white ml-2" id=<%="button1esp"+i%>>
                         
                         <p class="justify-content-start align-items-start">Bouton <%=1+2*(i-1)%></p>
-                        <input type="number" id=<%="form1esp"+i%> name="button1" value ="1"
+                        <input type="number" id=<%="form1esp"+i%> name="button1"
                         min="0" max="1" disabled >
                         
-                            <button type="button" id=<%="boutonsenddatabutton1esp"+i%> class="btn btn-primary" onclick="JavaScript:askvaluebouton();">Ask Value</button>
+                            <button type="button" id=<%="boutonsenddatabutton1esp"+i%> class="btn btn-primary boutondisplay mt-2" onclick="JavaScript:askvaluebouton();">Submit</button>
                         
                     </div>
                 </div>
-                <div id=<%="partie2esp"+i%> class="row">
+                <div id=<%="partie2esp"+i%> class="row m-3">
                     <div id=<%= "rgb2esp" + i%> class="lead text-white pt-3 d-flex flex-column align-items-end justify-content-end"> 
                         <p>Led <%=2+2*(i-1)%></p>
         
@@ -125,25 +127,26 @@
                         <p>B
                         <input id=<%="idledbleu2esp"+i%> type="number" name="ledbleu" min="0" max="1" disabled/></p>
 
-                        <button type="button" id=<%="boutonsenddata2esp"+i%> class="btn btn-success" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
+                        <button type="button" id=<%="boutonsenddata2esp"+i%> class="btn btn-success boutondisplay" onclick="JavaScript:senddata('idledrouge','ledverte','ledbleu');">Submit</button>
                     </div>
-                    <div class="d-flex flex-column align-items-end justify-content-end text-white" id=<%="button2esp"+i%>>
+                    <div class="d-flex flex-column align-items-end justify-content-end text-white ml-2" id=<%="button2esp"+i%>>
                         
                         <p class="justify-content-start align-items-start">Bouton <%=2+2*(i-1)%></p>
-                        <input type="number" id=<%="form2esp"+i%> name="button1" value ="1"
+                        <input type="number" id=<%="form2esp"+i%> name="button1"
                         min="0" max="1" disabled >
                         
-                            <button type="button" id=<%="boutonsenddatabutton2esp"+i%> class="btn btn-primary" onclick="JavaScript:askvaluebouton();">Ask Value</button>
+                            <button type="button" id=<%="boutonsenddatabutton2esp"+i%> class="boutondisplay btn btn-primary mt-2" onclick="JavaScript:askvaluebouton();">Submit</button>
                         
                     </div>
-                </div>
                 
             </div>
-        
+            </div>
+            <% } %>
             
-        </div>
+        
+    </div>
        
-        <% } %>
+        
         
         
             

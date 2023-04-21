@@ -81,3 +81,16 @@ ul
     display: table;
     clear: both;
   }
+
+
+.boutondisplay{
+    display:'none';
+}
+
+.stylebord{
+    border-style: inset;
+}
+
+#timer {
+    font-weight: bold;
+  }
