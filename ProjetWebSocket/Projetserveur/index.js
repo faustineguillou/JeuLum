@@ -1,21 +1,12 @@
+
 var bodyParser = require("body-parser");
 const express = require('express'); //express framework to have a higher level of methods
 const app = express(); //assign app variable the express class/method
 var http = require('http');
 var path = require("path");
-app.set("view engine", "ejs");
-const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;;
-const { send } = require("process");
-app.use(express.static(path.join(__dirname, 'public'))); 
-app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
-app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')))
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const server = http.createServer(app);//create a server
-
-
-
-
 //***************this snippet gets the local ip of the node.js server. copy this ip to the client side code and add ':3000' *****
 //****************exmpl. 192.168.56.1---> var sock =new WebSocket("ws://192.168.56.1:3000");*************************************
 require('dns').lookup(require('os').hostname(), function (err, add, fam) {
@@ -228,32 +219,23 @@ class GameMemory
     }
 }
 
+//PERMET D'ENVOYER UN MESSAGE A TOUS LES CLIENTS CONNECTES A LA WEBSOCKET
 function sendMessage(message)
 {
+    console.log("Sending : " + message);
     s.clients.forEach(function(client){ //broadcast incoming message to all clients (s.clients)
         client.send(message)
     });
 }
 //CREATE GAME
-//CREATE GAME
 var gameReflex = new GameReflex();
 var gameMemory = new GameMemory();
 //NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP EN FONCTION DU NOMBRE D'ESP CONNECTE AU PROJET
-var nbEsp = 4;
+var nbEsp = 1;
 //when browser sends get request, send html file to browser
 // viewed at http://localhost:3000
 app.get('/', function(req, res) {
     console.log('Hello world');
-});
-//NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP EN FONCTION DU NOMBRE D'ESP CONNECTE AU PROJET
-
-var arrayEspCo = ["1", "2", "3"];
-//when browser sends get request, send html file to browser
-// viewed at http://localhost:3000
-
-
-app.get('/page', function(req, res) {
-    res.render("page2.ejs",{ nbEsp: nbEsp});
 });
 //*************************************************************************************************************************
 //***************************ws chat server********************************************************************************
@@ -267,8 +249,9 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
                 client.send("broadcast: " +message);
             }
         });*/
+        //RECUPERE LA MESSAGE JSON
         const messageJson = JSON.parse(message);
-        if(messageJson.type == "esp")
+        if(messageJson.type == "esp") //VERIFIE QUE LE MESSAGE VIENT D'UN ESP
         {
             if(messageJson.game == 0 && !gameReflex.getGameLaunch() && messageJson.esp == 1) //CONDITION PERMETTANT DE LANCER LA PARTIE
             {
@@ -288,112 +271,10 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
                 gameMemory.checkGuess(messageJson.led);
             }
         }
-
-            
-        
-        else if(messageJson.type== "espweb")
+        else if(messageJson.type == "web") //VERIFIE QUE LE MESSAGE VIENT DU CLIENT WEB
         {
-            if(messageJson.appui == 1)
-            {
-                const msg = {
-                    type: "boutonweb",
-                    esp: messageJson.esp,
-                    bp: messageJson.bp,
-                    value :1,
-                    
-                  };
-                  console.log("server a recu message on a appuyé sur bp1");
-
-
-                  sendMessage(msg);
-            }
-            else if(messageJson.appui == 0 )
-            {
-                const msg = {
-                    type: "boutonweb",
-                    esp: messageJson.esp,
-                    bp: messageJson.bp,
-                    value: 0,                    
-                  };
-
-
-                  sendMessage(msg);
-            }
-        }
-
-        else if(messageJson.type== "chlum")
-        {
-            if(messageJson.appui == 1)
-            {
-                const msg = {
-                    type: "lumweb",
-                    esp: messageJson.esp,
-                    pin: messageJson.pin,
-                    value :1,
-                    
-                  };
-
-
-                  sendMessage(msg);
-            }
-            else if(messageJson.appui == 0 )
-            {
-                const msg = {
-                    type: "lumweb",
-                    esp: messageJson.esp,
-                    pin: messageJson.pin,
-                    value: 0,                    
-                  };
-
-
-                  sendMessage(msg);
-            }
-        }
-        else if(messageJson.type== "espco")
-        {
-            if(messageJson.co == 1)
-            {
-
-                arrayEspCo.push(messageJson.esp);
-                nbEsp+=1;
-
-
-            }
-            else if(messageJson.co == 0 )
-            {
-
-                for(let i=0;i<arrayEspCo.length;i++){
-                    if(arrayEspCo[i]==messageJson.esp)
-                    {
-                        arrayEspCo.splice(pos, 1);
-                        nbEsp=nbEsp-1;
-                    }
-                }
-                
-            }
-        }
-        else if(messageJson.type == "start")
-        {
-            if(messageJson.mode=="Mémoire")
-            {
-            game = new GameMemory();
-            game.startGame();
-            console.log("jeu mémoire lancé par page web");
-            }
-            else{
-            game = new GameReflex();
-            game.startGame();
-            console.log("jeu réflexe lancé par page web");
-            }
 
         }
-
-        else if(messageJson.type == "getespco")
-        {
-            sendMessage(JSON.stringify(arrayEspCo));
-
-        }
-        else{console.log("esle if focntionne pas");}
 // ws.send("From Server only to sender: "+ message); //send to client where message is from
     });
 
@@ -406,3 +287,4 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
 });
 
 server.listen(3000);
+

@@ -4,11 +4,10 @@
 #include <Arduino.h>
 #include <WebSocketsClient.h>
 #include <WiFi.h>
-
+#include <ArduinoJson.h>
 
 const char* ssid = "HeikoFaustine";
 const char* password =  "01234567";
-String request="";
 
 #define USE_SERIAL Serial
 
@@ -30,12 +29,11 @@ const int ledNumber [2] = {1, 2};
 // Variables will change:
 int lastState1 = HIGH; int lastState2 = HIGH; // the previous state from the input pin
 int currentState1; int currentState2;     // the current reading from the input pin
-int lastRed1 = HIGH; int lastRed2 = HIGH;
-int lastBlue1 = HIGH; int lastBlue2 = HIGH;
-int lastGreen1 = HIGH; int lastGreen2 = HIGH;
-int currentRed1; int currentRed2;
-int currentBlue1; int currentBlue2;
-int currentGreen1; int currentGreen2;
+int game = 0;
+StaticJsonDocument<500> jsonBuffer;
+DeserializationError error;
+
+//SWITCH ON-OFF LES LEDS EN FONCTION DU BOUTON 
 
 void switchOnRed(int led, boolean value)
 {
@@ -73,24 +71,54 @@ void switchOnGreen(int led, boolean value)
   }
 }
 
+//WEBSOCKET EVENT
+
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length){
     switch(type) {
 		case WStype_DISCONNECTED:
 			USE_SERIAL.printf("[WSc] Disconnected!\n");
-      request = "{\"type\" = \"espco\", \"co\"=0, \"esp\" = " + String(ESPNUMBER) + "}";
-      webSocket.sendTXT(request);
 			break;
 		case WStype_CONNECTED:
 			USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
-      request = "{\"type\" = \"espco\", \"co\"=1, \"esp\" = " + String(ESPNUMBER) + "}";
-      webSocket.sendTXT(request);
 
-			
+			// send message to server when Connected
 			//webSocket.sendTXT("Connected");
 			break;
-		case WStype_TEXT:
+		case WStype_TEXT: //LE CLIENT RECOIT UN MESSAGE EN JSON
 			USE_SERIAL.printf("[WSc] get text: %s\n", payload);
 
+      error = deserializeJson(jsonBuffer, payload);
+
+      if(jsonBuffer["end"] == 1)
+      {
+        game = 0;
+      }
+
+      if(game == 1)
+      {
+        if(jsonBuffer["esp"] == ESPNUMBER && jsonBuffer["for"] == "esp")
+        {
+          switchOnBlue(jsonBuffer["led"], jsonBuffer["action"]);
+        }
+      }
+      else if(game == 2)
+      {
+        if(jsonBuffer["for"] == "esp" && (jsonBuffer["led"] == ledNumber[0] || jsonBuffer["led"] == ledNumber[1]))
+        {
+          if(jsonBuffer["color"] == "blue")
+          {
+            switchOnBlue(jsonBuffer["led"], jsonBuffer["action"]);
+          }
+          else if(jsonBuffer["color"] == "red")
+          {
+            switchOnRed(jsonBuffer["led"], jsonBuffer["action"]);
+          }
+          else if(jsonBuffer["color"] == "green")
+          {
+            switchOnGreen(jsonBuffer["led"], jsonBuffer["action"]);
+          }
+        }
+      }
 			// send message to server
 			// webSocket.sendTXT("message here");
 			break;
@@ -115,213 +143,72 @@ void loop(){
 
   currentState1 = digitalRead(BUTTON_PIN1);
   currentState2 = digitalRead(BUTTON_PIN2);
-  currentRed1=digitalRead(RED_PIN1);
-  currentRed2=digitalRead(RED_PIN2);
-  currentBlue1=digitalRead(BLUE_PIN1);
-  currentBlue2=digitalRead(BLUE_PIN2);
-  currentGreen1=digitalRead(GREEN_PIN1);
-  currentGreen2=digitalRead(GREEN_PIN2);
-  
 
-  if(lastState1 == LOW && currentState1 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, BP1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 1}";
-      String request2 = "{\"type\" = \"espweb\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"bp\"=1}";
-      webSocket.sendTXT(request);
-      webSocket.sendTXT(request2);
-
-    }
-  }
-  if(lastState2 == LOW && currentState2 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, BP2");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 2}";
-      String request2 = "{\"type\" = \"espweb\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"bp\"=2}";
-      webSocket.sendTXT(request);
-      webSocket.sendTXT(request2);
-    }
-  }
-
-  if(lastState1 == HIGH && currentState1 == LOW) {
-    Serial.println("The state changed from LOW to HIGH, BP1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      String request = "{\"type\" = \"espweb\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"bp\"=1}";
-      webSocket.sendTXT(request);
-      
-
-    }
-  }
-  if(lastState2 == HIGH && currentState2 == LOW) {
-    Serial.println("The state changed from LOW to HIGH, BP2");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      String request = "{\"type\" = \"espweb\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"bp\"=2}";
-      webSocket.sendTXT(request);
-    }
-  }
-
-  if((lastState1 == LOW && currentState1 == HIGH) && (lastState2 == LOW && currentState2 == HIGH))
+  if(game == 1)
   {
-    Serial.println("Request to launch game");
-    if(WiFi.status() == WL_CONNECTED)
-    {
-      String request = "{type = \"esp\", esp = " + String(ESPNUMBER) + ", game = 0}";
-      webSocket.sendTXT(request);
+    if(lastState1 == LOW && currentState1 == HIGH) { //SI LE BP 1 DE L'ESP EST APPUYE
+      Serial.println("The state changed from LOW to HIGH, BP1");
+      if(WiFi.status()== WL_CONNECTED)
+      {
+        String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 1}";
+        webSocket.sendTXT(request); //ENVOIE LA REQUETE AU SERVEUR
+      }
+    }
+    if(lastState2 == LOW && currentState2 == HIGH) { //SI LE BP 2 DE L'ESP EST APPUYE
+      Serial.println("The state changed from LOW to HIGH, BP2");
+      if(WiFi.status()== WL_CONNECTED)
+      {
+        String request = "{\"type\" : \"esp\", \"game\" : 1, \"esp\" : " + String(ESPNUMBER) + ", \"bp\" : 2}";
+        webSocket.sendTXT(request); //ENVOIE LA REQUETE AU SERVEUR
+      }
     }
   }
-
-  if(lastRed1 == LOW && currentRed1 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, RED1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Red1\"}";
-      webSocket.sendTXT(request);
-
+  else if (game == 2)
+  {
+    if(lastState1 == LOW && currentState1 == HIGH) { //SI LE BP 1 DE L'ESP EST APPUYE
+      Serial.println("The state changed from LOW to HIGH, BP1");
+      if(WiFi.status()== WL_CONNECTED)
+      {
+        String request = "{\"type\" : \"esp\", \"game\" : 2, \"led\" : " + String(ledNumber[0]) + "}";
+        webSocket.sendTXT(request); //ENVOIE LA REQUETE AU SERVEUR
+      }
+    }
+    if(lastState2 == LOW && currentState2 == HIGH) { //SI LE BP 2 DE L'ESP EST APPUYE
+      Serial.println("The state changed from LOW to HIGH, BP2");
+      if(WiFi.status()== WL_CONNECTED)
+      {
+        String request = "{\"type\" : \"esp\", \"game\" : 2, \"led\" : " + String(ledNumber[1]) + "}";
+        webSocket.sendTXT(request); //ENVOIE LA REQUETE AU SERVEUR
+      }
     }
   }
-
-  if(lastRed1 == HIGH && currentRed1 == LOW) {
-    Serial.println("The state changed from HIGH to LOW, RED1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Red1\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastRed2 == LOW && currentRed2 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, RED1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Red2\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastRed2 == HIGH && currentRed2 == LOW) {
-    Serial.println("The state changed from HIGH to LOW, RED1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Red2\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastBlue1 == LOW && currentBlue1 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Blue1\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastBlue1 == HIGH && currentBlue1 == LOW) {
-    Serial.println("The state changed from HIGH to LOW, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Blue1\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastBlue2 == LOW && currentBlue2 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Blue2\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastBlue2 == HIGH && currentBlue2 == LOW) {
-    Serial.println("The state changed from HIGH to LOW, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Blue2\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastGreen1 == LOW && currentGreen1 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Green1\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastGreen1 == HIGH && currentGreen1 == LOW) {
-    Serial.println("The state changed from HIGH to LOW, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Green1\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastGreen2 == LOW && currentGreen2 == HIGH) {
-    Serial.println("The state changed from LOW to HIGH, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=1, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Green2\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
-  if(lastGreen2 == HIGH && currentGreen2 == LOW) {
-    Serial.println("The state changed from HIGH to LOW, BLUE1");
-    if(WiFi.status()== WL_CONNECTED)
-    {
-      
-      String request = "{\"type\" = \"chlum\", \"appui\"=0, \"esp\" = " + String(ESPNUMBER) + ", \"pin\"=\"Green2\"}";
-      webSocket.sendTXT(request);
-
-    }
-  }
-
   
+
+
+  //CONDITION PERMETTANT DE LANCER LA PARTIE SI ON APPUIE SUR LES 2 BOUTONS DE L'ESP 1
+  if(game == 0)
+  {
+    if((lastState1 == LOW && currentState1 == HIGH) && (lastState2 == LOW && currentState2 == HIGH))
+    {
+      Serial.println("Request to launch game");
+      if(WiFi.status() == WL_CONNECTED)
+      {
+        game = 2;
+        String request = "{\"type\" : \"esp\", \"esp\" : " + String(ESPNUMBER) + ", \"game\" : 0}";
+        webSocket.sendTXT(request);
+      }
+    }
+  }
 
   lastState1 = currentState1;
   lastState2 = currentState2;
-  lastRed1 = currentRed1;
-  lastRed2 = currentRed2;
-  lastBlue1 = currentBlue1;
-  lastBlue2 = currentBlue2;
-  lastGreen1 = currentGreen1;
-  lastGreen2 = currentGreen2;
   delay(100);
 }
 
 void setup(){
   Serial.begin(115200);
 
+  //INITIALISE LES PINS LEDS ET BOUTONS
   pinMode(BUTTON_PIN1, INPUT_PULLUP);
   pinMode(BUTTON_PIN2, INPUT_PULLUP);
   pinMode(RED_PIN1, OUTPUT);
@@ -337,6 +224,7 @@ void setup(){
   digitalWrite(GREEN_PIN2, LOW);
   digitalWrite(RED_PIN2, LOW);
   
+  //CONNECTION AU WIFI
   WiFi.begin(ssid, password);
     
   while (WiFi.status() != WL_CONNECTED) {
@@ -346,7 +234,7 @@ void setup(){
     
   Serial.println(WiFi.localIP());
 
-  webSocket.begin("192.168.0.100", 3000, "/");
+  webSocket.begin("192.168.0.104", 3000, "/");
   
   webSocket.onEvent(webSocketEvent);
 
