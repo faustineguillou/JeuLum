@@ -3,11 +3,19 @@ const express = require('express'); //express framework to have a higher level o
 const app = express(); //assign app variable the express class/method
 var http = require('http');
 var path = require("path");
+app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;;
+const { send } = require("process");
+app.use(express.static(path.join(__dirname, 'public'))); 
+app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
+app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')))
 const server = http.createServer(app);//create a server
+
+
 //***************this snippet gets the local ip of the node.js server. copy this ip to the client side code and add ':3000' *****
-//****************exmpl. 192.168.56.1---> var sock =new WebSocket("ws://192.168.56.1:3000");*************************************
+//****************exmpl. 192.168.0.100---> var sock =new WebSocket("ws://192.168.0.100:3000");*************************************
 require('dns').lookup(require('os').hostname(), function (err, add, fam) {
     console.log('addr: '+add);
 })
@@ -88,6 +96,7 @@ class GameReflex  //Création de la class gameReflex qui contrôle la boucle du 
         var request = '{"type" : "server", "for" : "esp", "esp" : ' + this.randEsp + 
             ', "led" : ' + this.randLed+ ', "action" : 0}';
         sendMessage(request)
+        this.finish()
     }
 
     //SI JAMAIS LA PARTIE EST GAGNE, FAIS LE CONTRAIRE DE LA FONCTION PERDRE
@@ -97,6 +106,14 @@ class GameReflex  //Création de la class gameReflex qui contrôle la boucle du 
         sendMessage(request)
         console.log("Vous avez gagne !")
         this.GameLaunch = false;
+        this.finish()
+    }
+
+    finish()
+    {
+        this.GameLaunch = false;
+        var request = '{"type" : "server", "for" : "esp", "end" : 1}';
+        sendMessage(request)
     }
 
     //PERMET DE DETERMINER LE RANDESP, RANDLED, ENVOIE LE MESSAGE EN JSON A TOUS LES ESP, SET UN TIMER
@@ -107,7 +124,7 @@ class GameReflex  //Création de la class gameReflex qui contrôle la boucle du 
         var request = '{"type" : "server", "for" : "esp", "esp" : ' + this.randEsp + 
             ', "led" : ' + this.randLed+ ', "action" : 1}';
         sendMessage(request)
-        this.timer = setTimeout(function() {gameReflex.endGameLose()}, 5000);
+        this.timer = setTimeout(function() {gameReflex.endGameLose()}, 20000);
     }
 }
 
@@ -230,12 +247,19 @@ function sendMessage(message)
 var gameReflex = new GameReflex();
 var gameMemory = new GameMemory();
 //NE PAS OUBLIER D'ACTUALISER LE NOMBRE D'ESP EN FONCTION DU NOMBRE D'ESP CONNECTE AU PROJET
-var nbEsp = 1;
+var nbEsp = 0;
 //when browser sends get request, send html file to browser
 // viewed at http://localhost:3000
 app.get('/', function(req, res) {
     console.log('Hello world');
 });
+
+app.get('/page', function(req, res) {
+    res.render("page2.ejs",{ nbEsp: nbEsp});
+});
+
+var arrayEspCo = [];
+
 //*************************************************************************************************************************
 //***************************ws chat server********************************************************************************
 //app.ws('/echo', function(ws, req) {
@@ -255,12 +279,12 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
             if(messageJson.game == 0 && !gameReflex.getGameLaunch() && messageJson.esp == 1) //CONDITION PERMETTANT DE LANCER LA PARTIE
             {
                 console.log("Nombre ESP : " + nbEsp);
-                //gameReflex = new GameReflex();
-                //gameReflex.startGame();
-                gameMemory = new GameMemory();
-                gameMemory.startGame();
+                gameReflex = new GameReflex();
+                gameReflex.startGame();
+                //gameMemory = new GameMemory();
+                //gameMemory.startGame();
             }
-            else if(messageJson.game == 1 && gameReflex.getGameLaunch() && messageJson.esp == game.getRandEsp()
+            else if(messageJson.game == 1 && gameReflex.getGameLaunch() && messageJson.esp == gameReflex.getRandEsp()
                 && messageJson.bp == gameReflex.getRandLed()) //CONDITION PERMETTANT DE VERIFIER SI LE BON BOUTON A ETE APPUYE
             {
                 gameReflex.cutTimer();
@@ -270,10 +294,165 @@ s.on('connection',function(ws,req){ //WHEN CLIENT CONNECT TO SERVER
                 gameMemory.checkGuess(messageJson.led);
             }
         }
-        else if(messageJson.type == "web") //VERIFIE QUE LE MESSAGE VIENT DU CLIENT WEB
+        else if(messageJson.type== "espweb")
         {
+            if(messageJson.appui == 1)
+            {
+                
+                var espval=String(messageJson.esp);
+                var bpval=String(messageJson.bp);
+                console.log("bp", bpval);
+                
+                
+                  console.log("server a recu message on a appuyé sur bp1");
+
+                  var espval=String(messageJson.esp);
+                  var bpval=String(messageJson.bp);
+                  
+                  const msg = {
+                      type: "boutonweb",
+                      esp: espval,
+                      bp : bpval,
+                      value : 1,
+                      
+                    };
+                  
+  
+  
+                    sendMessage(JSON.stringify(msg));
+                  //sendMessage(request);
+            }
+            else if(messageJson.appui == 0 )
+            {
+                var espval=String(messageJson.esp);
+                var bpval=String(messageJson.bp);
+                var request = '{"type" : "boutonweb", "esp" : '+ espval+',"bp" : '+bpval+',"value" : 0}';
+                const msg = {
+                    type: "boutonweb",
+                    esp: espval,
+                    bp : bpval,
+                    value : 0,
+                    
+                  };
+                
+
+
+                  sendMessage(JSON.stringify(msg));
+
+
+                //sendMessage(request);
+            }
+        }
+
+        else if(messageJson.type== "chlum")
+        {
+            if(messageJson.appui == 1)
+            {
+                var espval=String(messageJson.esp);
+                var pinval=String(messageJson.pin);
+                var request = '{"type" : "lumweb", "esp" : '+ espval+',"pin" : '+pinval+',"value" : 1}';
+                
+                const msg = {
+                    type: "lumweb",
+                    esp: espval,
+                    pin : pinval,
+                    value : 1,
+                    
+                  };
+                
+
+
+                  sendMessage(JSON.stringify(msg));
+                  console.log("ok 1");
+            }
+            else if(messageJson.appui == 0 )
+            {
+
+                var espval=String(messageJson.esp);
+                var pinval=String(messageJson.pin);
+                var request = '{"type" : "lumweb", "esp" : '+ espval+',"pin" : '+pinval+',"value" : 0}';
+                
+                const msg = {
+                    type: "lumweb",
+                    esp: espval,
+                    pin : pinval,
+                    value : 0,
+                    
+                  };
+
+                  sendMessage(JSON.stringify(msg));
+                  console.log("ok 0");
+            }
+        }
+
+        else if(messageJson.type== "chledforesp")
+        {
+            sendMessage(JSON.stringify(messageJson));
+        }
+        else if(messageJson.type== "espco")
+        {
+            if(messageJson.co == 1)
+            {
+
+                arrayEspCo.push(messageJson.esp);
+                nbEsp+=1;
+
+
+            }
+            else if(messageJson.co == 0 )
+            {
+
+                for(let i=0;i<arrayEspCo.length;i++){
+                    if(arrayEspCo[i]==messageJson.esp)
+                    {
+                        arrayEspCo.splice(pos, 1);
+                        nbEsp=nbEsp-1;
+                    }
+                }
+                
+            }
+        }
+        else if(messageJson.type == "start")
+        {
+            if(messageJson.mode=="Memoire")
+            {
+                const msg = {
+                    type: "serveur",
+                    for : "esp",
+                    launch : "true",
+                    game : 2,
+                  };
+                sendMessage(JSON.stringify(msg));
+                game = new GameMemory();
+                game.startGame();
+                
+                console.log("jeu mémoire lancé par page web");
+            }
+            else{
+                const msg = {
+                    type: "serveur",
+                    for : "esp",
+                    launch : "true",
+                    game : 1,
+                  };
+                sendMessage(JSON.stringify(msg));
+                
+                console.log("jeu réflexe lancé par page web");
+            }
 
         }
+
+        else if(messageJson.type == "getespco")
+        {
+            const msg = {
+                type: "espcoweb",
+                array: arrayEspCo,
+                
+              };
+              sendMessage(JSON.stringify(msg));
+
+        }
+        else{console.log("esle if focntionne pas");}
 // ws.send("From Server only to sender: "+ message); //send to client where message is from
     });
 
